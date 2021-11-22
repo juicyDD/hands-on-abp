@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Acme.BookStore.Entities.Commons;
+using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EntityFrameworkCore;
+using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.EntityFrameworkCore;
@@ -24,6 +26,8 @@ namespace Acme.BookStore.EntityFrameworkCore
         ITenantManagementDbContext
     {
         /* Add DbSet properties for your Aggregate Roots / Entities here. */
+        public DbSet<BoPhan> BoPhans { get; set; }
+        public DbSet<NhanVien> NhanViens { get; set; }
         
         #region Entities from the modules
         
@@ -81,6 +85,24 @@ namespace Acme.BookStore.EntityFrameworkCore
             //    b.ConfigureByConvention(); //auto configure for the base class props
             //    //...
             //});
+            builder.Entity<NhanVien>(b =>
+            {
+                b.ToTable(BookStoreConsts.DbTablePrefix + "NhanViens",
+                    BookStoreConsts.DbSchema);
+                b.Property(x => x.Name).IsRequired(true).HasMaxLength(128);
+                b.Property(x => x.Tuoi);
+                b.Property(x => x.CMND).HasMaxLength(20).IsRequired(true);
+                b.HasOne(t => t.BoPhan).WithMany(l => l.NhanViens).HasForeignKey(t => t.BoPhanId);
+                b.ConfigureByConvention();
+            });
+            builder.Entity<BoPhan>(b =>
+            {
+                b.ToTable(BookStoreConsts.DbTablePrefix + "BoPhans",
+                    BookStoreConsts.DbSchema);
+                b.Property(s => s.Name).HasMaxLength(255).IsRequired();
+                b.Property(s => s.GhiChu).HasMaxLength(1000).IsRequired();
+                b.ConfigureByConvention();
+            });
         }
     }
 }
